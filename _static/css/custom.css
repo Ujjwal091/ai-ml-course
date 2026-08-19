@@ -1,0 +1,86 @@
+/* Custom theme for AI/ML Course Notes — overrides sphinx-book-theme's default palette */
+
+:root {
+  --pst-color-primary: #4F46E5;            /* indigo accent */
+  --pst-color-primary-highlight: #4338CA;
+  --pst-color-secondary: #0D9488;          /* teal accent for secondary elements */
+  --pst-color-secondary-highlight: #0F766E;
+  --pst-color-link: #4F46E5;
+  --pst-color-link-hover: #4338CA;
+  --pst-color-inline-code: #BE185D;
+  --pst-color-inline-code-links: #4F46E5;
+  --pst-color-target: #FEF3C7;
+
+  --pst-color-info: #0369A1;
+  --pst-color-success: #15803D;
+  --pst-color-warning: #B45309;
+  --pst-color-danger: #B91C1C;
+
+  --pst-font-size-base: 16px;
+}
+
+html[data-theme="dark"] {
+  --pst-color-primary: #818CF8;
+  --pst-color-primary-highlight: #A5B4FC;
+  --pst-color-secondary: #2DD4BF;
+  --pst-color-secondary-highlight: #5EEAD4;
+  --pst-color-link: #818CF8;
+  --pst-color-link-hover: #A5B4FC;
+  --pst-color-inline-code: #F472B6;
+  --pst-color-target: #78350F;
+}
+
+/* Headings — slightly warmer weight + tighter tracking, sets pages apart from default theme look */
+h1, .bd-content h1 {
+  font-weight: 700;
+  border-bottom: 2px solid var(--pst-color-primary);
+  padding-bottom: 0.3em;
+}
+
+h2, .bd-content h2 {
+  font-weight: 650;
+  border-bottom: 1px solid var(--pst-color-border, #E5E7EB);
+  padding-bottom: 0.2em;
+  margin-top: 2.2em;
+}
+
+h3, .bd-content h3 {
+  font-weight: 600;
+  color: var(--pst-color-primary-highlight);
+}
+
+/* Code cells */
+div.highlight {
+  border-radius: 8px;
+  border: 1px solid var(--pst-color-border, #E5E7EB);
+}
+
+/* Blockquotes used for "check your understanding" Q&A */
+blockquote {
+  border-left: 4px solid var(--pst-color-secondary);
+  background: var(--pst-color-surface, rgba(13, 148, 136, 0.06));
+  border-radius: 0 6px 6px 0;
+  padding: 0.6em 1em;
+}
+
+/* Tables */
+table.table {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+table.table thead {
+  background-color: var(--pst-color-primary);
+  color: white;
+}
+
+/* Colab badge and top-of-page links */
+.bd-content p:first-of-type img[alt="Open In Colab"] {
+  margin-bottom: 0.5em;
+}
+
+/* Sidebar active link */
+.bd-sidebar-primary .active > a {
+  color: var(--pst-color-primary) !important;
+  font-weight: 600;
+}

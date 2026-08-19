@@ -1,4 +1,4 @@
-title: ML Notes
+title: AI/ML Course Notes
 author: Ujjwal
 logo: ""
 
@@ -25,3 +25,5 @@ sphinx:
     html_theme_options:
       show_navbar_depth: 2
       navigation_with_keys: true
+    html_static_path: ["_static"]
+    html_css_files: ["css/custom.css"]
