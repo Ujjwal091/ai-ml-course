@@ -1,0 +1,27 @@
+title: ML Notes
+author: Ujjwal
+logo: ""
+
+execute:
+  execute_notebooks: "off"   # notebooks are pre-executed; rebuild will just render saved outputs
+
+html:
+  use_repository_button: true
+  use_issues_button: true
+  use_edit_page_button: true
+  extra_navbar: ""
+
+repository:
+  url: https://github.com/Ujjwal091/ai-ml-course
+  branch: main
+
+launch_buttons:
+  colab_url: "https://colab.research.google.com"
+  binderhub_url: "https://mybinder.org"
+
+sphinx:
+  config:
+    html_theme: sphinx_book_theme
+    html_theme_options:
+      show_navbar_depth: 2
+      navigation_with_keys: true

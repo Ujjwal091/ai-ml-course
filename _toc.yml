@@ -1,0 +1,6 @@
+format: jb-book
+root: intro
+parts:
+  - caption: Unsupervised Learning
+    chapters:
+      - file: modules/01-unsupervised-learning/k-means/notes
