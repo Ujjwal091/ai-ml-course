@@ -1,8 +1,10 @@
 numpy
 pandas
+gdown
 matplotlib
 seaborn
 scikit-learn
 jupyterlab
 ipywidgets
 jupyter-book<2
+sphinxcontrib-mermaid

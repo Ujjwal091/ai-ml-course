@@ -19,7 +19,16 @@ launch_buttons:
   colab_url: "https://colab.research.google.com"
   binderhub_url: "https://mybinder.org"
 
+parse:
+  myst_enable_extensions:
+    - colon_fence
+    - deflist
+    - dollarmath
+    - amsmath
+
 sphinx:
+  extra_extensions:
+    - sphinxcontrib.mermaid
   config:
     html_theme: sphinx_book_theme
     html_theme_options:
@@ -27,3 +36,11 @@ sphinx:
       navigation_with_keys: true
     html_static_path: ["_static"]
     html_css_files: ["css/custom.css"]
+    mermaid_version: "10.9.0"
+    mermaid_init_config:
+      startOnLoad: false
+      themeVariables:
+        fontSize: "20px"
+      flowchart:
+        useMaxWidth: false
+        htmlLabels: true

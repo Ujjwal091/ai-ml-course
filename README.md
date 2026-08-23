@@ -8,10 +8,16 @@ Live site: https://ujjwal091.github.io/ai-ml-course/ (once GitHub Pages is enabl
 
 ```
 modules/
-  01-unsupervised-learning/
+  00-introduction-to-ml/
+    notes.ipynb        <- stands alone, not part of any module
+  01-supervised-learning/
+    01-linear-regression/
+      notes.ipynb       <- theory + code + visualizations for this topic
+  02-unsupervised-learning/
     k-means/
-      notes.ipynb   <- theory + code + visualizations for this topic
-      README.md     <- quick summary + links used
+      notes.ipynb
+    k-means-plus-plus/
+      notes.ipynb
 ```
 
 Each topic gets its own folder with a single notebook (`notes.ipynb`) that mixes:
@@ -45,12 +51,18 @@ Pushing to `main` also triggers a GitHub Actions workflow that builds and deploy
 
 ## Modules
 
-- [ ] 01 — Unsupervised Learning
+- [x] Introduction to Machine Learning *(stands alone — not part of a module)*
+- [ ] 01 — Supervised Learning
+  - [x] Linear Regression
+  - [ ] Polynomial Regression, Bias/Variance, Regularization
+  - [ ] Cross-Validation
+  - [ ] Logistic Regression / Classification
+- [ ] 02 — Unsupervised Learning
   - [x] K-Means Clustering
+  - [x] K-Means++
   - [ ] Hierarchical Clustering
   - [ ] DBSCAN
   - [ ] PCA
-- [ ] 02 — Supervised Learning (TBD)
 
 ## Adding a new topic
 

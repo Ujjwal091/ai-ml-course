@@ -1,6 +1,13 @@
 format: jb-book
 root: intro
 parts:
+  - caption: Introduction
+    chapters:
+      - file: modules/00-introduction-to-ml/notes
+  - caption: Supervised Learning
+    chapters:
+      - file: modules/01-supervised-learning/01-linear-regression/notes
   - caption: Unsupervised Learning
     chapters:
-      - file: modules/01-unsupervised-learning/k-means/notes
+      - file: modules/02-unsupervised-learning/k-means/notes
+      - file: modules/02-unsupervised-learning/k-means-plus-plus/notes
