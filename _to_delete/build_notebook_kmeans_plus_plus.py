@@ -182,18 +182,54 @@ code('''def kmeans_plus_plus_init(X, k, seed=42):
 
     return np.array(centroids)''')
 
-md("""**Watch it pick centroids, one at a time** — each new pick should land far from the ones already chosen.
+md("""**Watch it pick centroids, one panel at a time** — each panel is one step of the loop above, shown *before* that
+step's pick is made:
+
+- Panel 1 has no distance landscape yet — the very first centroid (blue X) is picked uniformly at random.
+- From panel 2 onward, every point is shaded by its probability of being picked next (darker red = squared
+  distance to the nearest already-chosen centroid, i.e. the actual quantity step 3 samples from) — black X's are
+  centroids already locked in, the blue X is the new pick this panel makes.
+- Notice the picks spread out and the "hot" (dark red) region keeps moving away from wherever centroids already
+  are — that's the "favor far-away points" rule actually doing its job, frame by frame.
 """)
 kpp_pick_cell = nbf.v4.new_code_cell('''X_demo, _ = make_blobs(n_samples=200, centers=4, cluster_std=0.7, random_state=3)
-centroids_demo = kmeans_plus_plus_init(X_demo, k=4, seed=3)
+rng = np.random.RandomState(3)
+k_demo = 4
+centroids_demo = []
 
-plt.figure(figsize=(6, 5))
-plt.scatter(X_demo[:, 0], X_demo[:, 1], s=15, color="#9CA3AF")
-for i, c in enumerate(centroids_demo):
-    plt.scatter(*c, s=200, marker="X", c="black", zorder=5)
-    plt.annotate(f"pick {i+1}", c, textcoords="offset points", xytext=(8, 8), fontsize=10, fontweight="bold")
-plt.title("k-means++ picks: each new centroid favors far-away points")
-plt.xticks([]); plt.yticks([])
+fig, axes = plt.subplots(1, k_demo, figsize=(4.3 * k_demo, 4.3))
+
+for step in range(k_demo):
+    ax = axes[step]
+
+    if step == 0:
+        # First centroid: no distance landscape to show yet, picked uniformly at random.
+        ax.scatter(X_demo[:, 0], X_demo[:, 1], s=30, color="#9CA3AF", edgecolors="#374151", linewidths=0.4)
+        next_idx = rng.choice(len(X_demo))
+        ax.set_title("Pick 1: uniformly random")
+    else:
+        # The probability landscape this pick is actually sampled from: squared distance
+        # to each point's NEAREST already-chosen centroid.
+        dist_sq = np.array([min(np.linalg.norm(p - c) ** 2 for c in centroids_demo) for p in X_demo])
+        probs = dist_sq / dist_sq.sum()
+        # Raise the color floor so low-probability points stay a visible pink instead of
+        # washing out to near-white against the plot background.
+        ax.scatter(X_demo[:, 0], X_demo[:, 1], s=30 + 300 * (dist_sq / dist_sq.max()),
+                   c=dist_sq, cmap="Reds", vmin=-0.35 * dist_sq.max(), vmax=dist_sq.max(),
+                   edgecolors="#7f1d1d", linewidths=0.4)
+        next_idx = rng.choice(len(X_demo), p=probs)
+        ax.set_title(f"Pick {step + 1}: favors far (dark red)")
+
+    # Centroids already locked in before this step
+    for c in centroids_demo:
+        ax.scatter(*c, s=220, marker="X", c="black", zorder=5)
+    # The new pick this step makes
+    ax.scatter(*X_demo[next_idx], s=280, marker="X", c="#2563EB", zorder=6)
+
+    centroids_demo.append(X_demo[next_idx])
+    ax.set_xticks([]); ax.set_yticks([])
+
+plt.tight_layout()
 plt.show()''')
 kpp_pick_cell["metadata"]["tags"] = ["remove-input"]
 cells.append(kpp_pick_cell)
@@ -299,8 +335,7 @@ straight line.
 - K-Means still assumes spherical, centroid-based clusters, full stop — no initialization trick changes that.
 
 **Open question to sit with:** if centroids are the real limitation, what's a completely different way to group
-points — one that doesn't rely on a single "center" at all? *(Not yet covered — comes up in hierarchical
-clustering.)*
+points — one that doesn't rely on a single "center" at all?
 """)
 
 # ================= 5. Choosing K: elbow method =================
@@ -467,19 +502,8 @@ This is the whole pipeline end to end: pick `k` with the elbow method (or silhou
 k-means++, fit, then read the resulting centroids as something a non-technical stakeholder can actually act on.
 """)
 
-# ================= 8. What's next =================
-md("""## 8. What's next: hierarchical clustering
-
-Section 4's open question — *what if we didn't need a center point at all?* — has a direct answer: instead of
-starting with `k` centers and assigning points to them, start with **every point as its own tiny cluster**, then
-repeatedly merge the two most similar clusters into one, until a natural grouping emerges. No centroid required at
-any step.
-
-This is called **hierarchical clustering**. *(Not yet covered in class — comes later.)*
-""")
-
-# ================= 9. Summary =================
-md("""## 9. Summary — revision cheat sheet
+# ================= 8. Summary =================
+md("""## 8. Summary — revision cheat sheet
 
 **Two separate limitations — don't mix them up:**
 - **Shape (unfixable by initialization):** K-Means only draws straight-line, centroid-based boundaries, so it
@@ -508,10 +532,6 @@ in the nearest *other* cluster (want large). Ranges $-1$ to $1$: close to $+1$ i
 $0$ sits on a cluster boundary, negative means it's probably in the wrong cluster. Average over all points to
 score an entire clustering, then just pick the `k` with the highest score — no bend-reading required, unlike the
 elbow method.
-
-**Not yet covered (coming in later sessions):** feature scaling before a real applied build, and hierarchical
-clustering (the centroid-free alternative that handles the shapes K-Means can't). These will get their own notes
-once covered in class.
 """)
 
 nb['cells'] = cells

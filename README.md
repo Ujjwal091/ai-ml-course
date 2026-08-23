@@ -9,21 +9,32 @@ Live site: https://ujjwal091.github.io/ai-ml-course/ (once GitHub Pages is enabl
 ```
 modules/
   00-introduction-to-ml/
-    notes.ipynb        <- stands alone, not part of any module
+    notes.py            <- the real source — edit THIS one
+    notes.ipynb          <- auto-generated from notes.py, don't hand-edit
   01-supervised-learning/
     01-linear-regression/
-      notes.ipynb       <- theory + code + visualizations for this topic
+      notes.py
+      notes.ipynb
   02-unsupervised-learning/
     k-means/
+      notes.py
       notes.ipynb
     k-means-plus-plus/
+      notes.py
       notes.ipynb
 ```
 
-Each topic gets its own folder with a single notebook (`notes.ipynb`) that mixes:
+Each topic gets its own folder with **one file you actually write in: `notes.py`** (plain Python, in Jupyter's
+"percent" format — `# %%` marks a code cell, `# %% [markdown]` marks a markdown cell). It reads like a normal
+script, diffs cleanly in git, and mixes:
 - **Theory** — markdown cells: definitions, intuition, math, diagrams/images, links to class notes or articles I used.
 - **Code** — runnable Python cells, usually both a from-scratch implementation (to build intuition) and the `scikit-learn` version (for practical use).
-- **Visualizations** — plots generated inline, since a lot of ML concepts (especially unsupervised learning) click faster when you can see them.
+- **Visualizations** — plots generated inline; cells that exist *only* to draw a picture (not to teach the algorithm) get `# %% tags=["remove-input"]` so the site shows the picture without the plotting code.
+
+`notes.ipynb` sits alongside it — that's a generated file, kept in sync automatically by
+[jupytext](https://jupytext.readthedocs.io/), and is what actually gets executed, opened in Colab, and built into
+the site (it's the only place outputs/plots are stored, since the plain-text `.py` doesn't carry cell outputs).
+You never hand-edit the `.ipynb` — see the workflow below.
 
 ## How to run/edit the code
 
@@ -38,6 +49,21 @@ python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 jupyter lab
 ```
+
+## Editing workflow (the actual day-to-day loop)
+
+1. Open `notes.py` for the topic in any text editor and write — headings, prose, code, whatever. No notebook UI needed.
+2. Sync it into the notebook and bake outputs:
+   ```bash
+   jupytext --sync modules/<topic>/notes.ipynb   # pulls your notes.py edits into notes.ipynb
+   jupyter execute --inplace modules/<topic>/notes.ipynb   # actually runs it, saves outputs
+   ```
+3. Preview the site (see below), then commit **both** `notes.py` and `notes.ipynb` — jupytext keeps them paired via
+   metadata in the `.ipynb`, so `--sync` always knows what to do.
+
+(If you'd rather work inside Jupyter/JupyterLab directly — running cells, seeing plots as you go — that works too:
+open `notes.ipynb` there, and as long as the [jupytext extension](https://jupytext.readthedocs.io/en/latest/install.html)
+is installed, saving the notebook automatically updates `notes.py` for you.)
 
 ## Building the site locally
 
@@ -66,6 +92,7 @@ Pushing to `main` also triggers a GitHub Actions workflow that builds and deploy
 
 ## Adding a new topic
 
-1. Copy `modules/_template/` into the right module folder, rename to the topic.
-2. Fill in theory, paste your class-note links/summaries, write code, add plots.
-3. Update the checklist above and commit.
+1. Copy `modules/_template/` (has a starter `notes.py` + paired `notes.ipynb`) into the right module folder, rename to the topic.
+2. Edit `notes.py` — fill in theory, paste your class-note links/summaries, write code.
+3. Run the sync + execute steps above to generate outputs, add the page to `_toc.yml`.
+4. Update the checklist above and commit both files.
