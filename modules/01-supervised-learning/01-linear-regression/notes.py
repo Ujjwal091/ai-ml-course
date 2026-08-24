@@ -222,17 +222,25 @@ plt.show()
 # %% [markdown]
 # ## 4. Prediction, error, and gradient descent
 #
-# The loop: start with random $m$, $c$ → predict $y_{predicted} = mx + c$ → measure error → nudge $m$, $c$ to reduce
-# it → repeat.
+# **The training loop, in one sentence:** start with a random guess for $m$ and $c$ → use them to predict
+# $y_{predicted} = mx + c$ → measure how wrong that guess is → nudge $m$ and $c$ in the direction that makes it
+# *less* wrong → repeat until it stops improving.
 #
-# **The error function — Mean Squared Error (MSE):**
+# The rest of this section is just making "measure how wrong" and "nudge in the right direction" precise.
+#
+# ### 4.1 Measuring "how wrong" — Mean Squared Error (MSE)
 #
 # $$
 # Error = \frac{1}{n} \sum (y - y_{predicted})^2
 # $$
 #
-# - Same shape as $x^2$ — **convex**, one single global minimum. Wherever gradient descent starts, it always rolls
-#   down to that same minimum.
+# - Square each point's error before summing — that stops positive and negative misses from canceling out, and
+#   punishes big misses harder than small ones.
+# - Averaging over all $n$ points turns "how wrong is this one prediction" into "how wrong is this entire line" —
+#   a single number you can compare across candidate lines.
+# - This formula has the same shape as $x^2$ — **convex**, meaning one single lowest point (global minimum) and no
+#   other dips to get stuck in. That matters for the next step: it's exactly what makes "always walk downhill"
+#   a strategy that's guaranteed to work.
 #
 
 # %% tags=["remove-input"]
@@ -260,22 +268,35 @@ plt.legend()
 plt.show()
 
 # %% [markdown]
-# **Minimizing with gradient descent** — the general update rule for any parameter:
+# ### 4.2 Walking downhill — gradient descent
+#
+# The **gradient** is just the slope of the error curve at your current guess. It always points in the direction
+# the error *increases* fastest — so to make the error smaller, you step the opposite way. That's the entire idea;
+# everything below is just writing it as a formula.
+#
+# **General update rule**, for any parameter `x`:
 #
 # $$
-# x = x - \text{step\_size} \cdot \frac{d(Error)}{dx}
+# x = x - \text{learning_rate} \cdot \frac{d(Error)}{dx}
 # $$
 #
-# For $x^2$, that's $x = x - \text{step\_size} \cdot (2x)$ — step opposite the slope, walk downhill. That's exactly
-# what the plot above just did.
+# - `learning_rate` (also called step size) — how big a step to take each round. Too small and training crawls;
+#   too large and it overshoots the minimum and can bounce around instead of settling.
+# - $\frac{d(Error)}{dx}$ — the slope of the error curve at `x`'s current value.
 #
-# **Expanding the error function** with $y_{predicted} = mx + c$ substituted in:
+# For plain $Error = x^2$, the slope is $2x$, so the rule becomes $x = x - \text{learning_rate} \cdot 2x$ — exactly
+# the steps the plot above just walked through.
+#
+# ### 4.3 Applying it to our actual parameters, $m$ and $c$
+#
+# Substitute the real prediction $y_{predicted} = mx + c$ into the error formula:
 #
 # $$
 # Error = \frac{1}{n} \sum (y - (mx + c))^2
 # $$
 #
-# **Partial derivatives** — how much the error changes as you nudge $m$ or $c$:
+# Now take the slope *separately* for each parameter — how much the error moves if you nudge just $m$ (holding $c$
+# fixed), and how much it moves if you nudge just $c$ (holding $m$ fixed):
 #
 # $$
 # \frac{d(Error)}{dm} = -\frac{2}{n} \sum (y - (mx + c)) \cdot x
@@ -283,16 +304,23 @@ plt.show()
 # \frac{d(Error)}{dc} = -\frac{2}{n} \sum (y - (mx + c))
 # $$
 #
-# **Parameter update rules**, using those gradients:
+# **Notice the two formulas are identical except for one thing** — the $m$ version has an extra $\cdot\, x$ tacked
+# on. That's not arbitrary: $m$ multiplies $x$ inside the prediction, so a 1-unit nudge to $m$ moves the prediction
+# by $x$ units, not 1. $c$ has no such multiplier — nudging it moves the prediction by exactly however much you
+# nudged it. That's the whole reason the two gradients look different.
+#
+# **Update rules**, using those two slopes:
 #
 # $$
-# m = m - \text{learning\_rate} \cdot \frac{d(Error)}{dm}
+# m = m - \text{learning_rate} \cdot \frac{d(Error)}{dm}
 # \qquad\qquad
-# c = c - \text{learning\_rate} \cdot \frac{d(Error)}{dc}
+# c = c - \text{learning_rate} \cdot \frac{d(Error)}{dc}
 # $$
 #
-# **The full loop, one more time:** random $m$, $c$ → predict → MSE → gradient descent update → repeat until error
-# stops improving.
+# ### 4.4 The full loop, one more time
+#
+# random $m, c$ → predict → measure MSE → compute both gradients → update $m$ and $c$ → repeat until the error
+# stops meaningfully improving.
 #
 
 # %% [markdown]
@@ -513,43 +541,7 @@ r_squared = calculate_r_squared(y, predicted_car_price)
 print(f"R-squared: {r_squared:.4f}")
 
 # %% [markdown]
-# ## 10. Practice exercise (left unfinished on purpose)
-#
-# This one was left as an in-class exercise — write a min-max normalization function that rescales an array so its
-# values land between `n_min` and `n_max`. The formula for min-max normalization is:
-#
-# $$
-# x_{norm} = n_{min} + \frac{(x - x_{min})(n_{max} - n_{min})}{x_{max} - x_{min}}
-# $$
-#
-# The starter code (with the bug still in it — `max` gets shadowed by the loop variable, and `norm_arr` is never
-# actually computed) is preserved exactly as it was left, so it's still there to attempt:
-#
-
-# %%
-import numpy as np
-def fnc(arr, n_min,n_max):
-    '''
-    input:
-    arr-> the input numpy array to the function
-    n_min -> an integer specifying the n_min value as mentioned in the problem statement
-    n_max -> an integer specifying the n_max value as mentioned in the problem statement
-    output:
-    norm_arr -> the normalized numpy array
-    '''
-    # YOUR CODE GOES HERE
-
-    diff = n_max-n_min
-    max = max(arr)
-
-    norm_arr = None
-
-
-    # YOUR CODE ENDS HERE
-    return norm_arr
-
-# %% [markdown]
-# ## 11. Summary — revision cheat sheet
+# ## 10. Summary — revision cheat sheet
 #
 # **The model:** $y = m_1x_1 + m_2x_2 + \cdots + c$ — a straight line (one feature) or a hyperplane (two or more
 # features) fit through the data.
@@ -561,7 +553,7 @@ def fnc(arr, n_min,n_max):
 # - *MSE (the error function)* — $\frac{1}{n}\sum(y - y_{predicted})^2$; convex, so it has a single global minimum
 #   and gradient descent always finds it.
 # - *Gradient descent* — repeatedly step each parameter opposite its gradient:
-#   $\theta = \theta - \text{learning\_rate} \cdot \frac{d(Error)}{d\theta}$.
+#   $x = x - \text{learning_rate} \cdot \frac{d(Error)}{dx}$.
 # - *R² (coefficient of determination)* — $1 - RSS/TSS$; how much better your model does than just predicting the
 #   mean every time. Range $(-\infty, 1]$; near 1 is a great fit, near 0 is no better than the mean, negative is
 #   worse than the mean.
