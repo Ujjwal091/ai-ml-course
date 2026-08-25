@@ -11,3 +11,4 @@ parts:
     chapters:
       - file: modules/02-unsupervised-learning/k-means/notes
       - file: modules/02-unsupervised-learning/k-means-plus-plus/notes
+      - file: modules/02-unsupervised-learning/hierarchical-clustering/notes

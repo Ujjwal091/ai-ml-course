@@ -553,3 +553,6 @@ for j in range(4):
 # score an entire clustering, then just pick the `k` with the highest score — no bend-reading required, unlike the
 # elbow method.
 #
+# **Next up:** the [Hierarchical Clustering notes](../hierarchical-clustering/notes.ipynb) — a completely different
+# approach that drops centroids altogether: no centers, no fixed `K` upfront, just repeated merging.
+#
