@@ -25,6 +25,9 @@ modules/
     hierarchical-clustering/
       notes.py
       notes.ipynb
+    gaussian-mixture-models/
+      notes.py
+      notes.ipynb
 ```
 
 Each topic gets its own folder with **one file you actually write in: `notes.py`** (plain Python, in Jupyter's
@@ -90,6 +93,7 @@ Pushing to `main` also triggers a GitHub Actions workflow that builds and deploy
   - [x] K-Means Clustering
   - [x] K-Means++
   - [x] Hierarchical Clustering
+  - [x] Gaussian Mixture Models
   - [ ] DBSCAN
   - [ ] PCA
 

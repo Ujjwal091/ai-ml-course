@@ -654,5 +654,7 @@ plt.show()
 #
 # **Not yet covered (coming in later sessions):** DBSCAN and PCA.
 #
-# **Next up:** whatever comes next in the unsupervised learning module — check the [course README](https://github.com/Ujjwal091/ai-ml-course) for the current module checklist.
+# **Next up:** the [Gaussian Mixture Models notes](../gaussian-mixture-models/notes.ipynb) — Hierarchical Clustering
+# doesn't scale to very large datasets and still forces every point into exactly one cluster; GMM fixes both by
+# giving every point a *probability* of belonging to each cluster instead of a single hard label.
 #
