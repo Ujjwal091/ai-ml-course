@@ -115,6 +115,76 @@ plt.show()
 # ```
 
 # %% [markdown]
+# **From scratch:** the four steps above, as actual code. Each cluster is just a list of point indices; at every
+# step, check *every* pair of current clusters, merge whichever pair is closest (using single linkage here — the
+# distance between their closest two points), and repeat until one cluster remains.
+#
+
+# %%
+def single_linkage_dist(a_points, b_points):
+    diffs = a_points[:, None, :] - b_points[None, :, :]
+    return np.linalg.norm(diffs, axis=2).min()
+
+def agglomerative_clustering(X, linkage_fn, n_clusters=1):
+    """Bottom-up agglomerative clustering: start with every point as its own cluster,
+    repeatedly merge the two closest clusters (by linkage_fn) until n_clusters remain."""
+    clusters = {i: np.array([i]) for i in range(len(X))}
+    history = []
+
+    while len(clusters) > n_clusters:
+        ids = list(clusters.keys())
+        best_pair, best_dist = None, np.inf
+        for i in range(len(ids)):
+            for j in range(i + 1, len(ids)):
+                a, b = ids[i], ids[j]
+                dist = linkage_fn(X[clusters[a]], X[clusters[b]])
+                if dist < best_dist:
+                    best_dist, best_pair = dist, (a, b)
+
+        a, b = best_pair
+        merged = np.concatenate([clusters[a], clusters[b]])
+        new_id = max(clusters) + 1
+        history.append((a, b, new_id, best_dist, len(merged)))
+        del clusters[a], clusters[b]
+        clusters[new_id] = merged
+
+    labels = np.zeros(len(X), dtype=int)
+    for label, idx in enumerate(clusters.values()):
+        labels[idx] = label
+    return labels, history
+
+_, toy_merge_history = agglomerative_clustering(toy_points, single_linkage_dist, n_clusters=1)
+for step, (a, b, new_id, dist, size) in enumerate(toy_merge_history, start=1):
+    print(f"Step {step}: merge cluster {a} + cluster {b} -> cluster {new_id}  (distance={dist:.3f}, size={size})")
+
+# %% [markdown]
+# Clusters 0–5 are the original points (P0–P5); anything numbered 6+ is a merged cluster created along the way.
+# The trace confirms exactly what the prose above described: (P0, P1) merge first (they're the closest pair
+# overall), then (P2, P3) and (P4, P5) each merge, and only *then* do those three pairs start merging with each
+# other — first the (P2,P3) and (P4,P5) pairs, since they're closer to each other than either is to (P0,P1), and
+# finally everything merges into one cluster.
+#
+# **Now the library version.** `scipy.cluster.hierarchy.linkage` does exactly the above — it just returns the
+# merge history as a matrix (`Z`) instead of print statements: each row is one merge, formatted as
+# `[cluster_a, cluster_b, distance, size_of_new_cluster]`.
+#
+
+# %%
+from scipy.cluster.hierarchy import linkage as scipy_linkage
+
+Z_toy = scipy_linkage(toy_points, method="single")
+for step, (a, b, dist, size) in enumerate(Z_toy, start=1):
+    print(f"Step {step}: merge cluster {int(a)} + cluster {int(b)} -> cluster {6 + step - 1}  "
+          f"(distance={dist:.3f}, size={int(size)})")
+
+# %% [markdown]
+# Same merge order, same distances, same cluster sizes as the from-scratch version — line for line. The
+# from-scratch loop isn't a simplified stand-in for the real algorithm, it *is* the real algorithm; `scipy` just
+# runs a faster, more optimized version of the same idea, and is what the rest of this notebook uses from here on
+# (checking every pair of clusters by hand doesn't scale, but it's the right way to build the intuition once).
+#
+
+# %% [markdown]
 # **Quick check**
 #
 # > What is the core mechanic that drives agglomerative hierarchical clustering?
