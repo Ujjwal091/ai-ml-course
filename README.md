@@ -11,8 +11,28 @@ modules/
   00-introduction-to-ml/
     notes.py            <- the real source — edit THIS one
     notes.ipynb          <- auto-generated from notes.py, don't hand-edit
+  data-preprocessing/
+    eda/
+      notes.py
+      notes.ipynb
+    feature-scaling/
+      notes.py
+      notes.ipynb
+    encoding/
+      notes.py
+      notes.ipynb
   01-supervised-learning/
     01-linear-regression/
+      01-basics/
+        notes.py
+        notes.ipynb
+      02-multivariate-regression/
+        notes.py
+        notes.ipynb
+      03-assumptions-and-diagnostics/
+        notes.py
+        notes.ipynb
+    02-polynomial-regression/
       notes.py
       notes.ipynb
   02-unsupervised-learning/
@@ -33,7 +53,7 @@ modules/
 Each topic gets its own folder with **one file you actually write in: `notes.py`** (plain Python, in Jupyter's
 "percent" format — `# %%` marks a code cell, `# %% [markdown]` marks a markdown cell). It reads like a normal
 script, diffs cleanly in git, and mixes:
-- **Theory** — markdown cells: definitions, intuition, math, diagrams/images, links to class notes or articles I used.
+- **Theory** — markdown cells: definitions, intuition, math, diagrams/images, links to articles I used.
 - **Code** — runnable Python cells, usually both a from-scratch implementation (to build intuition) and the `scikit-learn` version (for practical use).
 - **Visualizations** — plots generated inline; cells that exist *only* to draw a picture (not to teach the algorithm) get `# %% tags=["remove-input"]` so the site shows the picture without the plotting code.
 
@@ -84,9 +104,14 @@ Pushing to `main` also triggers a GitHub Actions workflow that builds and deploy
 ## Modules
 
 - [x] Introduction to Machine Learning *(stands alone — not part of a module)*
+- [x] Data Preprocessing *(general-purpose, reused across modules)*
+  - [x] Exploratory Data Analysis (EDA)
+  - [x] Feature Scaling
+  - [x] Encoding Categorical Features
 - [ ] 01 — Supervised Learning
-  - [x] Linear Regression
-  - [ ] Polynomial Regression, Bias/Variance, Regularization
+  - [x] Linear Regression *(basics, multivariate regression & evaluation, the 5 assumptions + diagnostics)*
+  - [x] Polynomial Regression *(incl. the bias-variance tradeoff)*
+  - [ ] Regularization (Ridge / Lasso)
   - [ ] Cross-Validation
   - [ ] Logistic Regression / Classification
 - [ ] 02 — Unsupervised Learning
@@ -100,6 +125,6 @@ Pushing to `main` also triggers a GitHub Actions workflow that builds and deploy
 ## Adding a new topic
 
 1. Copy `modules/_template/` (has a starter `notes.py` + paired `notes.ipynb`) into the right module folder, rename to the topic.
-2. Edit `notes.py` — fill in theory, paste your class-note links/summaries, write code.
+2. Edit `notes.py` — fill in theory, paste reference links/summaries, write code.
 3. Run the sync + execute steps above to generate outputs, add the page to `_toc.yml`.
 4. Update the checklist above and commit both files.

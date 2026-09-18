@@ -480,7 +480,7 @@ for k, s in zip(ks_sil, sil_scores):
 #
 # A common real use case for K-Means: given customers' annual income and a "spending score," segment them into
 # groups a marketing team can actually act on. Same two-column shape as the classic mall-customer segmentation
-# dataset used in class.
+# dataset.
 #
 
 # %% tags=["remove-input"]

@@ -14,12 +14,17 @@
 # ---
 
 # %% [markdown]
-# # Linear Regression
+# # Linear Regression — the Basics
 #
-# [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/Ujjwal091/ai-ml-course/blob/main/modules/01-supervised-learning/01-linear-regression/notes.ipynb)
+# [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/Ujjwal091/ai-ml-course/blob/main/modules/01-supervised-learning/01-linear-regression/01-basics/notes.ipynb)
 #
-# *The first concrete algorithm — fitting a straight line to data, and the machinery (cost function, gradient
-# descent, R²) that makes "fitting" a precise, repeatable process instead of a guess.*
+# *Part 1 of 3 on Linear Regression. The first concrete algorithm — fitting a straight line to data, and the
+# machinery (cost function, gradient descent, R²) that makes "fitting" a precise, repeatable process instead of a
+# guess.*
+#
+# **This notebook:** the model, the running example, and gradient descent from scratch.
+# **Next up:** [Multivariate Regression & Evaluation](../02-multivariate-regression/notes.ipynb), then
+# [Assumptions & Diagnostics](../03-assumptions-and-diagnostics/notes.ipynb).
 #
 
 # %% [markdown]
@@ -36,10 +41,13 @@
 # - *Which* variables matter for predicting a car's price?
 # - *How well* do those variables explain the price?
 #
-# **Dataset:** real Cars24 listings, already cleaned and normalized.
+# **Dataset:** real Cars24 used-car listings, hosted on GitHub so this notebook runs anywhere. Every numeric column
+# (including the one-hot flags) has already been through a `StandardScaler` — mean 0, standard deviation 1 — which
+# is why the raw numbers below look small and centered around zero instead of looking like rupee prices or
+# kilometers.
 #
-# - **Input features (X):** `km_driven`, `mileage`, `engine`, `max_power`, `age`, `make`, `model`, plus categorical
-#   flags like `Individual`, `Trustmark Dealer`, `Diesel`, `Electric`.
+# - **Input features (X):** `km_driven`, `mileage`, `engine`, `max_power`, `age`, `year`, `make`, `model`, plus
+#   one-hot flags `Individual`, `Trustmark Dealer`, `Diesel`, `Electric`, `LPG`, `Petrol`, `Manual`, `5`, `>5`.
 # - **Target (y):** `selling_price`
 #
 # **Goal:** build a model that predicts a car's selling price from its features.
@@ -49,22 +57,30 @@
 # ### 1.1 Load the data
 
 # %%
+import os
 import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split
 
 # %% [markdown]
-# This is the exact loading step from class — pulls the real dataset via `gdown` from Google Drive.
+# Loading straight from a public URL (rather than a local file) means this notebook runs the same way for anyone
+# who clones the repo — no separate download step, no dependency on a private drive link.
 
 # %%
-# !gdown 1qXoDeYVC4vhd7xTNwohxh9dMCjjtoHoJ -O ./data/cars24-car-price-cleaned-new.csv
-df = pd.read_csv('data/cars24-car-price-cleaned-new.csv')  ## Loading the dataset
+DATA_URL = "https://raw.githubusercontent.com/28101991SUNNY/DSML-Classical-Machine-Learning-1/main/cars24-car-price-clean.csv"
+DATA_PATH = "data/cars24-car-price-clean.csv"
+
+if not os.path.exists(DATA_PATH):
+    os.makedirs("data", exist_ok=True)
+    pd.read_csv(DATA_URL).to_csv(DATA_PATH, index=False)
+
+df = pd.read_csv(DATA_PATH)  ## Loading the dataset
 df.head()  ## Displaying the first 5 rows of the dataset for quick overview
 
 # %% [markdown]
 # ### 1.2 Data notation
 #
-# Before touching any code, it's worth pinning down the notation class actually uses for this — it shows up in
+# Before touching any code, it's worth pinning down the notation used throughout this notebook — it shows up in
 # every formula from here on.
 #
 # - We have $n$ historical cars — this is the *training data* we already know the price of.
@@ -165,6 +181,38 @@ df.head()  ## Displaying the first 5 rows of the dataset for quick overview
 df_train, df_test = train_test_split(df, test_size=0.2, random_state=40)
 
 # %% [markdown]
+# ### 2.1 Choosing a split ratio, and the one rule you can't break
+#
+# | Data size | Recommended split | Reasoning |
+# |---|---|---|
+# | Small (< 5,000 rows) | 80 / 20 | The model needs more data to learn reliably |
+# | Large (10,000+ rows) | 70 / 30 | A larger test set gives a more confident evaluation |
+#
+# **The workflow this split is for:**
+#
+# ```{mermaid}
+# graph TD
+#     A["Historical data"] -->|split| B["Train set"]
+#     A -->|split| C["Test set"]
+#     B --> D["Model building<br/>algorithm learns patterns"]
+#     D --> E["Predict on Test set<br/>unseen inputs"]
+#     E --> F["Evaluate<br/>predicted vs. actual"]
+#
+#     style A fill:#BFDBFE,stroke:#374151,stroke-width:2px,color:#111827
+#     style D fill:#FDE68A,stroke:#374151,stroke-width:2px,color:#111827
+#     style F fill:#A7F3D0,stroke:#374151,stroke-width:2px,color:#111827
+# ```
+#
+# > **Golden rule:** never train on test data. The test set must stay unseen throughout training — otherwise
+# > whatever metric you compute afterward (R², accuracy, anything) is meaningless, because the model is just
+# > reciting rows it already memorized, not proving it generalizes.
+#
+# **The split must be random.** If the data is sorted (say, by year), taking the first 80% as train means the model
+# never sees recent data during training at all. `train_test_split` shuffles by default — that's not an accident,
+# it's load-bearing.
+#
+
+# %% [markdown]
 # ## 3. The equation of the line
 #
 # Linear regression tries to fit a straight line through the data. For one feature:
@@ -182,6 +230,10 @@ df_train, df_test = train_test_split(df, test_size=0.2, random_state=40)
 # where $m_1, m_2, m_3, \ldots$ are the coefficients (one per feature) and $c$ is the intercept. "Fitting" the model
 # means finding the specific values of every $m_i$ and $c$ that make this line match the data as closely as
 # possible.
+#
+# In ML terms, the line parameters get renamed: $m$ becomes the **weight** $w$, $c$ becomes the **bias** $b$. The
+# feature column values are *inputs*, the target column values are *targets* or *labels*. Same equation, different
+# vocabulary — you'll see both used interchangeably from here on.
 #
 
 # %% [markdown]
@@ -220,7 +272,88 @@ plt.legend()
 plt.show()
 
 # %% [markdown]
-# ## 4. Prediction, error, and gradient descent
+# ## 4. Guessing parameters by hand — why we need gradient descent at all
+#
+# Before reaching for any formal machinery, it's worth feeling the pain it solves. The obvious first approach: pick
+# a `w` and `b`, plot the resulting line against the real data, eyeball how far off it is, and try again.
+#
+
+# %%
+def estimate_charges(x, w, b):
+    return w * x + b
+
+
+def try_parameters(w, b, feature="max_power", target="selling_price"):
+    x = df[feature]
+    y = df[target]
+    estimated = estimate_charges(x, w, b)
+
+    plt.figure(figsize=(8, 5))
+    order = np.argsort(x.values)
+    plt.plot(x.values[order], estimated.values[order], 'r', alpha=0.9, label='estimate')
+    plt.scatter(x, y, s=8, alpha=0.5, label='actual')
+    plt.xlabel(feature); plt.ylabel(target)
+    plt.legend()
+    plt.title(f"w={w}, b={b}")
+    plt.show()
+
+
+# %% [markdown]
+# **First guess — wildly off.** Since our data is already standardized (roughly in the $[-3, 3]$ range), a slope
+# of 2 and an intercept of 1 overshoots badly:
+
+# %%
+try_parameters(2, 1)
+
+# %% [markdown]
+# **Second guess — closer, but still not it:**
+
+# %%
+try_parameters(0.5, 0)
+
+# %% [markdown]
+# **Third guess — getting there, by eye:**
+
+# %%
+try_parameters(0.9, 0)
+
+# %% [markdown]
+# > **The problem with manual tuning:** changing `w` and `b` by hand and eyeballing the plot is tedious and
+# > imprecise — there's no way to tell *how much* better guess 3 is than guess 2 beyond "looks closer." We need a
+# > number (a cost function) and a systematic way to improve it (an optimizer) — exactly the two ingredients the
+# > next section names, and exactly what gradient descent (Section 6) automates.
+#
+
+# %% [markdown]
+# ## 5. The three ingredients of every ML algorithm
+#
+# It's worth naming the pattern explicitly here — because every ML algorithm you'll ever meet, from this simple
+# line all the way to massive neural networks, is built from exactly three parts:
+#
+# ```{mermaid}
+# graph LR
+#     A["🏗️ Model<br/>makes predictions<br/>e.g. y = wx + b"] --> B["📉 Cost Function<br/>measures how wrong<br/>e.g. MSE"]
+#     B --> C["🔄 Optimizer<br/>adjusts the model<br/>e.g. Gradient Descent"]
+#     C -.->|repeat| A
+#
+#     style A fill:#BFDBFE,stroke:#374151,stroke-width:2px,color:#111827
+#     style B fill:#FDE68A,stroke:#374151,stroke-width:2px,color:#111827
+#     style C fill:#A7F3D0,stroke:#374151,stroke-width:2px,color:#111827
+# ```
+#
+# - **Model** — the equation that turns features into a prediction. For us: $y = mx + c$.
+# - **Cost function** — a single number scoring how wrong the model currently is. For us: Mean Squared Error.
+# - **Optimizer** — the algorithm that nudges the model's parameters to make the cost function smaller. For us:
+#   Gradient Descent.
+#
+# Once you can name these three pieces for *any* algorithm, you can instantly orient yourself in it — swap out the
+# model (a neural network instead of a line), the cost function (cross-entropy instead of MSE), or the optimizer
+# (Adam instead of plain gradient descent), and the loop is exactly the same shape. The rest of this section makes
+# all three precise for linear regression specifically.
+#
+
+# %% [markdown]
+# ## 6. Prediction, error, and gradient descent
 #
 # **The training loop, in one sentence:** start with a random guess for $m$ and $c$ → use them to predict
 # $y_{predicted} = mx + c$ → measure how wrong that guess is → nudge $m$ and $c$ in the direction that makes it
@@ -228,7 +361,7 @@ plt.show()
 #
 # The rest of this section is just making "measure how wrong" and "nudge in the right direction" precise.
 #
-# ### 4.1 Measuring "how wrong" — Mean Squared Error (MSE)
+# ### 6.1 Measuring "how wrong" — Mean Squared Error (MSE)
 #
 # $$
 # Error = \frac{1}{n} \sum (y - y_{predicted})^2
@@ -268,7 +401,7 @@ plt.legend()
 plt.show()
 
 # %% [markdown]
-# ### 4.2 Walking downhill — gradient descent
+# ### 6.2 Walking downhill — gradient descent
 #
 # The **gradient** is just the slope of the error curve at your current guess. It always points in the direction
 # the error *increases* fastest — so to make the error smaller, you step the opposite way. That's the entire idea;
@@ -287,7 +420,7 @@ plt.show()
 # For plain $Error = x^2$, the slope is $2x$, so the rule becomes $x = x - \text{learning_rate} \cdot 2x$ — exactly
 # the steps the plot above just walked through.
 #
-# ### 4.3 Applying it to our actual parameters, $m$ and $c$
+# ### 6.3 Applying it to our actual parameters, $m$ and $c$
 #
 # Substitute the real prediction $y_{predicted} = mx + c$ into the error formula:
 #
@@ -317,7 +450,7 @@ plt.show()
 # c = c - \text{learning_rate} \cdot \frac{d(Error)}{dc}
 # $$
 #
-# ### 4.4 The full loop, one more time
+# ### 6.4 The full loop, one more time
 #
 # random $m, c$ → predict → measure MSE → compute both gradients → update $m$ and $c$ → repeat until the error
 # stops meaningfully improving.
@@ -334,7 +467,7 @@ plt.show()
 #
 
 # %% [markdown]
-# ## 5. R-squared (coefficient of determination)
+# ## 7. R-squared (coefficient of determination)
 #
 # - Question R² answers: **is this fitted line actually good?**
 # - How: compare your model's error against the simplest possible baseline — always predicting the average `y`.
@@ -389,11 +522,12 @@ print(f"R-squared     : {1 - np.sum((toy_y - toy_pred)**2)/np.sum((toy_y - toy_m
 #
 
 # %% [markdown]
-# ## 6. Building it from scratch — one feature first
+# ## 8. Building it from scratch — one feature first
 #
-# Starting simple: predicting `selling_price` from `max_power` alone. This is the exact function built in class —
-# notice it scales `x` first (subtracts the mean, divides by the standard deviation), because gradient descent
-# converges far more reliably when features are on a similar scale.
+# Starting simple: predicting `selling_price` from `max_power` alone. Notice it scales `x` first (subtracts the
+# mean, divides by the standard deviation), because gradient descent converges far more reliably when features are
+# on a similar scale — see the [Feature Scaling notes](../../../data-preprocessing/feature-scaling/notes.ipynb) for
+# why.
 #
 
 # %%
@@ -429,11 +563,11 @@ def regression(x, y, m=1, c=0, learning_rate=0.001, threshold=0.001, max_iter=10
 regression(x=df['max_power'], y=df['selling_price'])
 
 # %% [markdown]
-# ## 7. Generalizing to multiple features
+# ## 9. Generalizing to multiple features
 #
 # The single-feature version only handles one $m$. Real problems have several features at once — `max_power` and
-# `mileage` together, say — so the class notebook generalizes it: `m` becomes a weight *vector* `w` (one weight per
-# feature), and the math becomes matrix operations instead of a single multiply.
+# `mileage` together, say — so let's generalize it: `m` becomes a weight *vector* `w` (one weight per feature), and
+# the math becomes matrix operations instead of a single multiply.
 #
 
 # %%
@@ -497,7 +631,7 @@ regression(x, y)
 
 
 # %% [markdown]
-# ## 8. Scoring the fit with R²
+# ## 10. Scoring the fit with R²
 
 # %%
 def calculate_r_squared(y_true, y_pred):
@@ -523,7 +657,7 @@ r_squared = calculate_r_squared(y, predicted_car_price)
 print(f"R-squared: {r_squared:.4f}")
 
 # %% [markdown]
-# ## 9. Same thing, using scikit-learn
+# ## 11. Same thing, using scikit-learn
 # Once you understand what's happening underneath, this is the version you'd actually reach for day to day.
 
 # %%
@@ -541,18 +675,24 @@ r_squared = calculate_r_squared(y, predicted_car_price)
 print(f"R-squared: {r_squared:.4f}")
 
 # %% [markdown]
-# ## 10. Summary — revision cheat sheet
+# Only 2 of the 17 available features so far, and already R² ≈ 0.6. What happens if we stop leaving 15 features on
+# the table? That's exactly where the next notebook picks up.
 #
-# **The model:** $y = m_1x_1 + m_2x_2 + \cdots + c$ — a straight line (one feature) or a hyperplane (two or more
-# features) fit through the data.
+
+# %% [markdown]
+# ## 12. Summary — revision cheat sheet
+#
+# **The model:** $y = mx + c$ (one feature) or $y = m_1x_1 + m_2x_2 + \cdots + c$ (many). Every ML algorithm
+# reduces to the same three ingredients: **Model** (predicts), **Cost Function** (scores the error), **Optimizer**
+# (reduces it).
 #
 # **Fitting it — the loop:** start with random $m$, $c$ → predict → measure error with MSE → nudge $m$, $c$ downhill
 # via gradient descent → repeat until the error stops meaningfully improving.
 #
 # **Core definitions:**
-# - *MSE (the error function)* — $\frac{1}{n}\sum(y - y_{predicted})^2$; convex, so it has a single global minimum
+# - *MSE (the cost function)* — $\frac{1}{n}\sum(y - y_{predicted})^2$; convex, so it has a single global minimum
 #   and gradient descent always finds it.
-# - *Gradient descent* — repeatedly step each parameter opposite its gradient:
+# - *Gradient descent (the optimizer)* — repeatedly step each parameter opposite its gradient:
 #   $x = x - \text{learning_rate} \cdot \frac{d(Error)}{dx}$.
 # - *R² (coefficient of determination)* — $1 - RSS/TSS$; how much better your model does than just predicting the
 #   mean every time. Range $(-\infty, 1]$; near 1 is a great fit, near 0 is no better than the mean, negative is
@@ -563,6 +703,6 @@ print(f"R-squared: {r_squared:.4f}")
 # **Practical must-do:** always split into train/test before fitting, and never let the model see the test set
 # during training — that's the only way the R² (or any other metric) you compute afterward actually means anything.
 #
-# **Next up:** more on evaluating and improving a regression model — polynomial regression, bias/variance,
-# regularization, and cross-validation.
+# **Next up:** [Multivariate Regression & Evaluation](../02-multivariate-regression/notes.ipynb) — using every one
+# of the 17 available features at once, reading coefficients, outliers, Adjusted R², and StatsModels.
 #

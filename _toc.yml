@@ -4,9 +4,18 @@ parts:
   - caption: Introduction
     chapters:
       - file: modules/00-introduction-to-ml/notes
+  - caption: Data Preprocessing
+    chapters:
+      - file: modules/data-preprocessing/eda/notes
+      - file: modules/data-preprocessing/feature-scaling/notes
+      - file: modules/data-preprocessing/encoding/notes
   - caption: Supervised Learning
     chapters:
-      - file: modules/01-supervised-learning/01-linear-regression/notes
+      - file: modules/01-supervised-learning/01-linear-regression/01-basics/notes
+        sections:
+          - file: modules/01-supervised-learning/01-linear-regression/02-multivariate-regression/notes
+          - file: modules/01-supervised-learning/01-linear-regression/03-assumptions-and-diagnostics/notes
+      - file: modules/01-supervised-learning/02-polynomial-regression/notes
   - caption: Unsupervised Learning
     chapters:
       - file: modules/02-unsupervised-learning/k-means/notes
