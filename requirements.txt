@@ -4,6 +4,7 @@ gdown
 matplotlib
 seaborn
 scikit-learn
+statsmodels
 jupyterlab
 ipywidgets
 jupyter-book<2

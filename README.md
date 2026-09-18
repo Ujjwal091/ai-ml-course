@@ -48,6 +48,9 @@ modules/
     gaussian-mixture-models/
       notes.py
       notes.ipynb
+    time-series/
+      notes.py
+      notes.ipynb
 ```
 
 Each topic gets its own folder with **one file you actually write in: `notes.py`** (plain Python, in Jupyter's
@@ -121,6 +124,7 @@ Pushing to `main` also triggers a GitHub Actions workflow that builds and deploy
   - [x] Gaussian Mixture Models
   - [ ] DBSCAN
   - [ ] PCA
+  - [x] Time Series — Cleaning, Trend & Seasonality *(forecasting and UMAP to follow)*
 
 ## Adding a new topic
 

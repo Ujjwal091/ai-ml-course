@@ -22,3 +22,4 @@ parts:
       - file: modules/02-unsupervised-learning/k-means-plus-plus/notes
       - file: modules/02-unsupervised-learning/hierarchical-clustering/notes
       - file: modules/02-unsupervised-learning/gaussian-mixture-models/notes
+      - file: modules/02-unsupervised-learning/time-series/notes
