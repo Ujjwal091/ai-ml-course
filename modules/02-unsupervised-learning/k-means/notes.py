@@ -541,3 +541,7 @@ print("k-means++, best of 10 runs, inertia :", sk_model_robust.inertia_)
 # in production, k-means++ built from scratch, choosing K with the elbow method and silhouette score, and a closer
 # look at the cluster-shape limitation above.
 #
+# **See it applied to real data:** the [Iris clustering case study](../../03-case-studies/iris-clustering/notes.ipynb)
+# runs everything above end-to-end on a real dataset with known ground truth — including a case where the elbow
+# and silhouette methods actually disagree with the "right" answer.
+#

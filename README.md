@@ -48,7 +48,14 @@ modules/
     gaussian-mixture-models/
       notes.py
       notes.ipynb
+    dbscan/
+      notes.py
+      notes.ipynb
     time-series/
+      notes.py
+      notes.ipynb
+  03-case-studies/
+    iris-clustering/
       notes.py
       notes.ipynb
 ```
@@ -121,10 +128,12 @@ Pushing to `main` also triggers a GitHub Actions workflow that builds and deploy
   - [x] K-Means Clustering
   - [x] K-Means++
   - [x] Hierarchical Clustering
-  - [x] Gaussian Mixture Models
-  - [ ] DBSCAN
+  - [x] Gaussian Mixture Models *(incl. covariance types — spherical/diagonal/full)*
+  - [x] DBSCAN
   - [ ] PCA
   - [x] Time Series — Cleaning, Trend & Seasonality *(forecasting and UMAP to follow)*
+- [x] Case Studies
+  - [x] Iris Clustering with K-Means
 
 ## Adding a new topic
 

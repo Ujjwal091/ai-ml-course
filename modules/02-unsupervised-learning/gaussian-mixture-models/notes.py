@@ -231,7 +231,76 @@ plt.show()
 #
 
 # %% [markdown]
-# ## 5. Putting it together: GMM intuition
+# ## 5. One more knob: what shape can each Gaussian take?
+#
+# Section 4 showed covariance controlling how an ellipse tilts. In practice, `sklearn`'s `GaussianMixture` lets you
+# constrain that shape per component via `covariance_type` — a real trade-off between flexibility and how much data
+# you need to fit it reliably:
+#
+# | `covariance_type` | Shape it can take | Free parameters (this dataset, K=2) | When to use |
+# |---|---|---|---|
+# | `"spherical"` | Perfect circle — same variance in every direction | 7 | Very little data, or you're confident features don't correlate at all within a segment |
+# | `"diag"` | Axis-aligned ellipse — features vary independently, no tilt | 9 | Features are on genuinely different scales but not correlated with each other |
+# | `"full"` | Any ellipse — any size, any tilt | 11 | Enough data to estimate it reliably, and features plausibly correlate within a segment (the default used everywhere else in this notebook) |
+#
+# More flexibility means more parameters to estimate from the same amount of data — `"full"` fits the real,
+# tilted "deal hunter" correlation best, but on a small or noisy dataset that flexibility can start fitting noise
+# instead of signal. `"spherical"` is the most constrained and the most similar to what K-Means implicitly assumes.
+#
+
+# %%
+from sklearn.mixture import GaussianMixture
+
+covariance_types = ["spherical", "diag", "full"]
+cov_fits = {ct: GaussianMixture(n_components=2, covariance_type=ct, n_init=5, random_state=4).fit(X_overlap)
+            for ct in covariance_types}
+
+for ct, model in cov_fits.items():
+    print(f"{ct:>10}: {model._n_parameters()} free parameters, BIC = {model.bic(X_overlap):.1f}")
+
+# %% [markdown]
+# Lower BIC (Bayesian Information Criterion) is better — it rewards a good fit but penalizes extra parameters.
+# Here `"full"` still wins even after that penalty, because the real correlation in this data is strong enough to
+# be worth the extra parameters. BIC is exactly the tool to reach for when it's *not* obvious which
+# `covariance_type` (or which `K`) fits best — pick whichever combination minimizes it.
+#
+
+# %% tags=["remove-input"]
+colors_gmm = ["#1D4ED8", "#B91C1C"]
+
+fig, axes = plt.subplots(1, 3, figsize=(15, 4.8))
+for ax, ct in zip(axes, covariance_types):
+    model = cov_fits[ct]
+    labels_ct = model.predict(X_overlap)
+    for j in range(2):
+        ax.scatter(X_overlap[labels_ct == j, 0], X_overlap[labels_ct == j, 1], s=14, color=colors_gmm[j], alpha=0.7)
+    for k in range(2):
+        cov_k = model.covariances_[k]
+        if ct == "spherical":
+            cov_k = np.eye(2) * cov_k
+        elif ct == "diag":
+            cov_k = np.diag(cov_k)
+        vals, vecs = np.linalg.eigh(cov_k)
+        order = vals.argsort()[::-1]
+        vals, vecs = vals[order], vecs[:, order]
+        angle = np.degrees(np.arctan2(vecs[1, 0], vecs[0, 0]))
+        width, height = 2 * 2 * np.sqrt(np.maximum(vals, 0))
+        ax.add_patch(Ellipse(model.means_[k], width, height, angle=angle,
+                              edgecolor="#111827", facecolor="none", linewidth=1.6))
+    ax.set_title(f'"{ct}" — {model._n_parameters()} params, BIC {model.bic(X_overlap):.0f}', fontsize=10)
+    ax.set_xticks([]); ax.set_yticks([])
+plt.suptitle("Same data, same K=2 — covariance_type controls the shape each Gaussian is allowed to take")
+plt.tight_layout()
+plt.show()
+
+# %% [markdown]
+# `"spherical"` forces two circles onto data that's actually tilted, so it has to compromise on where it draws the
+# boundary. `"diag"` does a bit better but still can't tilt. `"full"` is the only one that can follow the real
+# correlation — which is exactly why it wins on BIC despite costing more parameters.
+#
+
+# %% [markdown]
+# ## 6. Putting it together: GMM intuition
 #
 # Back to "weekend browsers" vs. "deal hunters" overlapping from Section 1: instead of fitting one Gaussian to
 # everything, fit **multiple Gaussians — one per segment** — and let every customer get a likelihood score under
@@ -273,7 +342,7 @@ plt.show()
 #
 
 # %% [markdown]
-# ## 6. The engine underneath: Expectation-Maximization (EM)
+# ## 7. The engine underneath: Expectation-Maximization (EM)
 #
 # So how do you actually fit `K` Gaussians to Veloura's customers — finding the best $\mu$, $\sigma$ (covariance),
 # and mixing weight for each segment? **EM**, in four steps:
@@ -375,7 +444,7 @@ plt.show()
 #
 
 # %% [markdown]
-# ## 7. Applied: segmenting Veloura customers with GMM
+# ## 8. Applied: segmenting Veloura customers with GMM
 #
 # Time to run this for real. A synthetic dataset expands to four behavioral features (closer to the real
 # 12-feature dataset) — average order value, visit frequency, days since last purchase, and order count — gets
@@ -476,7 +545,7 @@ plt.show()
 #
 
 # %% [markdown]
-# ## 8. GMM vs. K-Means
+# ## 9. GMM vs. K-Means
 #
 # | | K-Means | GMM |
 # |---|---|---|
@@ -551,7 +620,7 @@ plt.show()
 #
 
 # %% [markdown]
-# ## 9. Bonus: taking GMM live at Veloura
+# ## 10. Bonus: taking GMM live at Veloura
 #
 # The segments look good, Marketing loves the blended probabilities, and someone asks the obvious next question:
 # *"Cool — can this run on our website, live, for every new customer the second they sign up?"*
@@ -636,7 +705,7 @@ plt.show()
 #
 
 # %% [markdown]
-# ## 10. Summary — revision cheat sheet
+# ## 11. Summary — revision cheat sheet
 #
 # **The big idea:** replace hard, forced-into-one-cluster assignment with **soft clustering** — a probability of
 # belonging to each segment, produced by fitting one Gaussian distribution per cluster.
@@ -650,7 +719,7 @@ plt.show()
 # **Expectation-Maximization (EM)** fits `K` Gaussians to the data in a loop:
 # - **E step** — score every customer against every Gaussian, normalize into responsibilities that sum to 1.
 # - **M step** — update each Gaussian's mean/covariance as the responsibility-weighted average of all customers.
-# - Repeat until convergence. See Section 6 for the full from-scratch walkthrough.
+# - Repeat until convergence. See Section 7 for the full from-scratch walkthrough.
 #
 # **GMM vs. K-Means:** GMM produces elliptical, rotatable clusters with soft (probabilistic) membership; K-Means
 # produces spherical clusters with hard membership. K-Means is what you get when a GMM is forced to have equal,
@@ -663,8 +732,6 @@ plt.show()
 # but a live model goes stale quietly as customer behavior drifts, so it needs periodic re-checking, not
 # "fit once and forget."
 #
-# **Not yet covered (coming in later sessions):** DBSCAN.
-#
-# **Next up:** DBSCAN — teaching the clustering algorithm to say "I don't know." Check the
-# [course README](https://github.com/Ujjwal091/ai-ml-course) for the current module checklist.
+# **Next up:** [DBSCAN](../dbscan/notes.ipynb) — teaching the clustering algorithm to say "I don't know," fixing
+# both the forced-fit problem and the shape problem this notebook's GMM couldn't handle.
 #
