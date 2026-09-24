@@ -384,5 +384,7 @@ print(f"As a share of typical revenue: {resid.std() / df['revenue_clean'].mean()
 # - **Decomposition**: $y(t) = b(t) + s(t) + e(t)$ — split the data into trend, seasonality, and residual. A small,
 #   centered, pattern-free residual means trend and seasonality explain most of the data.
 #
-# **Coming next**: a separate notebook that turns this understanding into an actual forecast.
+# **See it applied to forecasting:** [Time Series — Forecasting](../time-series-forecasting/notes.ipynb) picks up
+# this exact cleaned series and uses it to actually predict future months — baselines, moving-average and
+# exponential-smoothing forecasts, and how to check a forecast is stationary enough for ARIMA-style models.
 #
