@@ -57,6 +57,9 @@ modules/
     time-series-forecasting/
       notes.py
       notes.ipynb
+    market-basket-analysis/
+      notes.py
+      notes.ipynb
   03-case-studies/
     iris-clustering/
       notes.py
@@ -136,6 +139,7 @@ Pushing to `main` also triggers a GitHub Actions workflow that builds and deploy
   - [ ] PCA
   - [x] Time Series — Cleaning, Trend & Seasonality
   - [x] Time Series — Forecasting *(baselines, exponential smoothing, stationarity; ARIMA/SARIMA and UMAP to follow)*
+  - [x] Recommendation Systems — Market Basket Analysis *(support, confidence, lift, Apriori pruning)*
 - [x] Case Studies
   - [x] Iris Clustering with K-Means
 
