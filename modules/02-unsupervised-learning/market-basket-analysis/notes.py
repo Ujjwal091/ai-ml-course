@@ -24,19 +24,10 @@
 # %% [markdown]
 # ## 1. Where this fits
 #
-# Every ML problem we've seen so far has a type:
-#
-# - **Regression** — predict a number.
-# - **Classification** — predict a label.
-# - **Clustering** — find groups.
-# - **Dimensionality reduction** — shrink the columns.
-# - **Anomaly detection** — find the odd one out.
-# - **Time series forecasting** — predict the next values in order.
-# - **Recommendation** — suggest items a user would like.
-#
-# Recommendation can be framed two ways: give every item a **score** per user, or ask "if the user bought `X`, will
-# they buy `Y`?" This notebook does the second one. It is **unsupervised** — there is no `y` column. We only have
-# purchase history, and we look for patterns in it.
+# Market basket analysis is the "if the user bought `X`, will they buy `Y`?" side of recommendation. It is
+# **unsupervised** — there is no `y` column. We only have purchase history, and we look for patterns in it. (The
+# other side — giving every user their own personal score for every item — is in
+# [Recommender Systems](../recommender-systems/notes.ipynb).)
 #
 # **The data**: same Veloura fashion retailer as the other notebooks. Every row of the billing system is one item on
 # one invoice. We want to find which products are bought together.
@@ -275,7 +266,71 @@ print(f"After dropping 2 items:    {2**len(frequent_items) - 1:,} itemsets to ch
 # Only 2 items dropped, and we already skip about 75% of the work. With 100 real products, where most are rare,
 # the savings are enormous. And this was only step 1 — pruning at the pair level and beyond cuts it even more.
 #
-# Here's the full from-scratch version:
+# First, the whole procedure on a tiny table you can check by eye. Five baskets, minimum support 60% (an itemset
+# must appear in at least 3 of 5 baskets):
+#
+
+# %%
+tiny = [
+    frozenset({"jeans", "tee"}),
+    frozenset({"jeans", "belt", "socks", "scarf"}),
+    frozenset({"jeans", "belt", "socks", "tee"}),
+    frozenset({"belt", "socks", "tee"}),
+    frozenset({"jeans", "belt", "socks"}),
+]
+pd.DataFrame([{i: int(i in t) for i in sorted(set().union(*tiny))} for t in tiny],
+             index=[f"T{k}" for k in range(1, 6)])
+
+# %% [markdown]
+# **Step 1 — single items.** Count each, drop anything under 3 baskets.
+#
+
+# %%
+def tiny_count(itemset):
+    return sum(set(itemset) <= t for t in tiny)
+
+step1 = pd.DataFrame({
+    "baskets": {i: tiny_count({i}) for i in sorted(set().union(*tiny))},
+})
+step1["support"] = step1["baskets"] / len(tiny)
+step1["verdict"] = np.where(step1["support"] >= 0.6, "keep", "PRUNED")
+step1
+
+# %% [markdown]
+# `scarf` appears once (20%), so it is dropped — and with it every combination containing scarf.
+#
+# **Step 2 — pairs, built only from survivors.**
+#
+
+# %%
+survivors = list(step1[step1["verdict"] == "keep"].index)
+step2 = pd.DataFrame(
+    [{"pair": set(p), "baskets": tiny_count(p)} for p in combinations(survivors, 2)]
+)
+step2["support"] = step2["baskets"] / len(tiny)
+step2["verdict"] = np.where(step2["support"] >= 0.6, "keep", "PRUNED")
+step2
+
+# %% [markdown]
+# **Step 3 — triples, built only from the surviving pairs.** Then rules from whatever survives. Take the rule
+# `{belt, socks} ⇒ {jeans}`:
+#
+
+# %%
+triple = {"belt", "socks", "jeans"}
+sup_triple = tiny_count(triple) / len(tiny)
+conf = tiny_count(triple) / tiny_count({"belt", "socks"})
+lift = conf / (tiny_count({"jeans"}) / len(tiny))
+print(f"support    = {tiny_count(triple)}/5          = {sup_triple:.2f}")
+print(f"confidence = {tiny_count(triple)}/{tiny_count({'belt', 'socks'})}          = {conf:.2f}")
+print(f"lift       = {conf:.2f} / {tiny_count({'jeans'}) / len(tiny):.2f}   = {lift:.2f}")
+
+# %% [markdown]
+# Support 60% (common enough), confidence 75% (3 of 4 belt-and-socks baskets had jeans), lift 0.94 — a touch
+# **below** 1. Jeans are so common in this tiny table (80%) that "belt and socks" doesn't make them any likelier.
+# This rule passes the support filter yet is not a real link. That's why the lift check always comes last.
+#
+# Now the full from-scratch version:
 #
 
 # %%
@@ -404,5 +459,6 @@ for cart in [{"jeans"}, {"sneakers"}, {"tshirt"}]:
 # - **2ᴺ − 1 itemsets** is too many to check. **Apriori pruning**: a rare item makes every combination containing it
 #   rare, so drop rare items first and build bigger combinations only from survivors.
 #
-# **Coming next**: more recommendation approaches, once I've covered them.
+# **Next**: [Recommender Systems](../recommender-systems/notes.ipynb) — personal scores per user, instead of rules
+# for everyone.
 #
