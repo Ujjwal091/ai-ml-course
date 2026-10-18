@@ -57,6 +57,8 @@ modules/
     time-series-forecasting/
       notes.py
       notes.ipynb
+    recommendation-systems/
+      index.md              <- overview page: groups the 3 pages below
     market-basket-analysis/
       notes.py
       notes.ipynb

@@ -40,12 +40,15 @@ parts:
         title: Time Series
       - file: modules/02-unsupervised-learning/time-series-forecasting/notes
         title: Forecasting
-      - file: modules/02-unsupervised-learning/market-basket-analysis/notes
-        title: Market Basket
-      - file: modules/02-unsupervised-learning/recommender-systems/notes
-        title: Recommenders
-      - file: modules/02-unsupervised-learning/matrix-factorization/notes
-        title: Matrix Factorization
+      - file: modules/02-unsupervised-learning/recommendation-systems/index
+        title: Recommendation Systems
+        sections:
+          - file: modules/02-unsupervised-learning/market-basket-analysis/notes
+            title: Market Basket
+          - file: modules/02-unsupervised-learning/recommender-systems/notes
+            title: Collaborative Filtering
+          - file: modules/02-unsupervised-learning/matrix-factorization/notes
+            title: Matrix Factorization
   - caption: Case Studies
     chapters:
       - file: modules/03-case-studies/iris-clustering/notes
