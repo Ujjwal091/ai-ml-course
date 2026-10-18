@@ -4,30 +4,49 @@ parts:
   - caption: Introduction
     chapters:
       - file: modules/00-introduction-to-ml/notes
+        title: Intro to ML
   - caption: Data Preprocessing
     chapters:
       - file: modules/data-preprocessing/eda/notes
+        title: EDA
       - file: modules/data-preprocessing/feature-scaling/notes
+        title: Feature Scaling
       - file: modules/data-preprocessing/encoding/notes
+        title: Encoding
   - caption: Supervised Learning
     chapters:
       - file: modules/01-supervised-learning/01-linear-regression/01-basics/notes
+        title: Linear Regression
         sections:
           - file: modules/01-supervised-learning/01-linear-regression/02-multivariate-regression/notes
+            title: Multivariate
           - file: modules/01-supervised-learning/01-linear-regression/03-assumptions-and-diagnostics/notes
+            title: Assumptions
       - file: modules/01-supervised-learning/02-polynomial-regression/notes
+        title: Polynomial Regression
   - caption: Unsupervised Learning
     chapters:
       - file: modules/02-unsupervised-learning/k-means/notes
+        title: K-Means
       - file: modules/02-unsupervised-learning/k-means-plus-plus/notes
+        title: K-Means++
       - file: modules/02-unsupervised-learning/hierarchical-clustering/notes
+        title: Hierarchical
       - file: modules/02-unsupervised-learning/gaussian-mixture-models/notes
+        title: GMM
       - file: modules/02-unsupervised-learning/dbscan/notes
+        title: DBSCAN
       - file: modules/02-unsupervised-learning/time-series/notes
+        title: Time Series
       - file: modules/02-unsupervised-learning/time-series-forecasting/notes
+        title: Forecasting
       - file: modules/02-unsupervised-learning/market-basket-analysis/notes
+        title: Market Basket
       - file: modules/02-unsupervised-learning/recommender-systems/notes
+        title: Recommenders
       - file: modules/02-unsupervised-learning/matrix-factorization/notes
+        title: Matrix Factorization
   - caption: Case Studies
     chapters:
       - file: modules/03-case-studies/iris-clustering/notes
+        title: Iris Case Study
