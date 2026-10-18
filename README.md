@@ -63,6 +63,9 @@ modules/
     recommender-systems/
       notes.py
       notes.ipynb
+    matrix-factorization/
+      notes.py
+      notes.ipynb
   03-case-studies/
     iris-clustering/
       notes.py
@@ -144,6 +147,7 @@ Pushing to `main` also triggers a GitHub Actions workflow that builds and deploy
   - [x] Time Series — Forecasting *(baselines, exponential smoothing, stationarity; ARIMA/SARIMA and UMAP to follow)*
   - [x] Recommendation Systems — Market Basket Analysis *(support, confidence, lift, Apriori pruning)*
   - [x] Recommender Systems *(collaborative filtering, cold start, content-based, matrix factorization)*
+  - [x] Matrix Factorization *(K-Means/GMM as MF, NMF, multiple signals, Netflix Prize: regularization, biases, time; text & images)*
 - [x] Case Studies
   - [x] Iris Clustering with K-Means
 

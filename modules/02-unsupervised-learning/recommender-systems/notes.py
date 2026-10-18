@@ -394,5 +394,6 @@ for i in ranked:
 #   Learn dense user/item profiles from the known ratings only (gradient descent), then fill any blank with a dot
 #   product. Pick `d` by test error.
 #
-# **Coming next**: more recommendation topics, once I've covered them.
+# **Next**: [Matrix Factorization](../matrix-factorization/notes.ipynb) — K-Means turns out to be matrix
+# factorization too, and the Netflix Prize upgrades (regularization, biases, time) build on what we did here.
 #

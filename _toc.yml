@@ -27,6 +27,7 @@ parts:
       - file: modules/02-unsupervised-learning/time-series-forecasting/notes
       - file: modules/02-unsupervised-learning/market-basket-analysis/notes
       - file: modules/02-unsupervised-learning/recommender-systems/notes
+      - file: modules/02-unsupervised-learning/matrix-factorization/notes
   - caption: Case Studies
     chapters:
       - file: modules/03-case-studies/iris-clustering/notes
