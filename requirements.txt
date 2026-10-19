@@ -10,3 +10,4 @@ ipywidgets
 jupyter-book<2
 sphinxcontrib-mermaid
 jupytext
+mlxtend

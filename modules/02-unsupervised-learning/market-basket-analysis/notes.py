@@ -447,7 +447,63 @@ for cart in [{"jeans"}, {"sneakers"}, {"tshirt"}]:
 #
 
 # %% [markdown]
-# ## 10. Summary — revision cheat sheet
+# ## 10. The same thing with a library (`mlxtend`)
+#
+# We wrote `apriori()` and `make_rules()` by hand to see how they work. In a real project you would use a library.
+# The usual choice is [`mlxtend`](https://rasbt.github.io/mlxtend/). It does the same two steps:
+#
+# | Our code | `mlxtend` |
+# |---|---|
+# | `apriori(transactions, min_support)` | `apriori(table, min_support, use_colnames=True)` |
+# | `make_rules(frequent_itemsets, min_confidence)` | `association_rules(itemsets, metric="confidence", min_threshold=...)` |
+#
+# One difference: `mlxtend` wants a **True/False table** (one row per basket, one column per item), not a list of sets.
+# `TransactionEncoder` builds that table for us.
+#
+
+# %%
+from mlxtend.frequent_patterns import apriori as mlxtend_apriori, association_rules
+from mlxtend.preprocessing import TransactionEncoder
+
+encoder = TransactionEncoder()
+basket_table = pd.DataFrame(encoder.fit(transactions).transform(transactions), columns=encoder.columns_)
+basket_table.head(3)
+
+# %% [markdown]
+# Now the two library calls:
+#
+
+# %%
+lib_itemsets = mlxtend_apriori(basket_table, min_support=MIN_SUPPORT, use_colnames=True)
+lib_rules = association_rules(lib_itemsets, metric="confidence", min_threshold=0.5)
+
+print(f"library: {len(lib_itemsets)} frequent itemsets, {len(lib_rules)} rules")
+print(f"ours:    {len(frequent_itemsets)} frequent itemsets, {len(rules)} rules")
+
+lib_rules[["antecedents", "consequents", "support", "confidence", "lift"]].sort_values("lift", ascending=False).round(3).reset_index(drop=True)
+
+# %% [markdown]
+# Same itemsets, same rules, same numbers. Our hand-written code and the library agree. The check below makes it explicit:
+#
+
+# %%
+ours = {frozenset(s): round(v, 6) for s, v in frequent_itemsets.items()}
+theirs = {frozenset(row.itemsets): round(row.support, 6) for row in lib_itemsets.itertuples()}
+print("Same itemsets and supports:", ours == theirs)
+
+# %% [markdown]
+# **Notes on using it**
+#
+# - `use_colnames=True` shows item names such as `{jeans, belt}`. Without it you only see column numbers.
+# - `association_rules` also returns extra columns (`leverage`, `conviction`, …). Support, confidence and lift are the
+#   three we care about.
+# - To filter like before: `lib_rules[lib_rules["lift"] > 1.2]`.
+# - `fpgrowth` (same package) finds the same itemsets without generating candidates, and is faster on large data.
+#   Apriori is the one to understand first, because its count → join → prune idea is easy to see.
+#
+
+# %% [markdown]
+# ## 11. Summary — revision cheat sheet
 #
 # - **Recommendation** (this flavour) is unsupervised — no `y`, just purchase history.
 # - **Transaction** = one basket. **Itemset** = a group of items. **Rule** $A \Rightarrow B$ = "if `A`, then likely `B`".
@@ -458,6 +514,7 @@ for cart in [{"jeans"}, {"sneakers"}, {"tshirt"}]:
 # - **Confidence trap**: if `B` is bought by almost everyone, any rule ending in `B` has high confidence. Check lift.
 # - **2ᴺ − 1 itemsets** is too many to check. **Apriori pruning**: a rare item makes every combination containing it
 #   rare, so drop rare items first and build bigger combinations only from survivors.
+# - In practice, use `mlxtend`: `apriori(...)` then `association_rules(...)`. It gives the same result as our hand-written code.
 #
 # **Next**: [Recommender Systems](../recommender-systems/notes.ipynb) — personal scores per user, instead of rules
 # for everyone.
