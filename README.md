@@ -72,6 +72,10 @@ modules/
     iris-clustering/
       notes.py
       notes.ipynb
+  04-neural-networks/
+    neural-networks-1/
+      notes.py
+      notes.ipynb
 ```
 
 Each topic gets its own folder with **one file you actually write in: `notes.py`** (plain Python, in Jupyter's
@@ -150,6 +154,9 @@ Pushing to `main` also triggers a GitHub Actions workflow that builds and deploy
   - [x] Recommendation Systems — Market Basket Analysis *(support, confidence, lift, Apriori pruning)*
   - [x] Recommender Systems *(collaborative filtering, cold start, content-based, matrix factorization)*
   - [x] Matrix Factorization *(K-Means/GMM as MF, NMF, multiple signals, Netflix Prize: regularization, biases, time; text & images)*
+- [ ] 04 — Neural Networks
+  - [x] Neural Networks 1 *(neuron = logistic regression, layers as matrices, activations, loss, softmax, forward pass)*
+  - [ ] Backpropagation & optimization
 - [x] Case Studies
   - [x] Iris Clustering with K-Means
 

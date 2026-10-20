@@ -49,6 +49,10 @@ parts:
             title: Collaborative Filtering
           - file: modules/02-unsupervised-learning/matrix-factorization/notes
             title: Matrix Factorization
+  - caption: Neural Networks
+    chapters:
+      - file: modules/04-neural-networks/neural-networks-1/notes
+        title: NN Basics
   - caption: Case Studies
     chapters:
       - file: modules/03-case-studies/iris-clustering/notes
